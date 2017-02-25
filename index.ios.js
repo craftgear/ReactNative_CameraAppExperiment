@@ -10,24 +10,60 @@ import {
   StyleSheet,
   Text,
   View,
-  Dimensions
+  Dimensions,
+  Image,
 } from 'react-native';
 import Camera from 'react-native-camera';
 
 export default class CameraAppExpriment extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      bounds: {origin: {x: 0, y: 0}, size: {height: 0, width: 0}},
+      opacity: 0,
+    }
+  }
+
+  readQR(e) {
+    console.log('********* e', e);
+    if (e.data === 'Hello :)') {
+      this.setState({opacity: 1});
+    }
+    else {
+      this.setState({opacity: 0});
+    }
+    this.setState({bounds: e.bounds, data: e.data});
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <Camera ref={cam => {
-          this.camera = cam;
-        }}
-        style={styles.preview}
-        aspect={Camera.constants.Aspect.fill}>
+        <Image
+          style={{
+            opacity: this.state.opacity,
+            height: parseInt(this.state.bounds.size.height),
+            width: parseInt(this.state.bounds.size.width),
+            left: parseInt(this.state.bounds.origin.x),
+            top: parseInt(this.state.bounds.origin.y),
+            resizeMode: 'stretch',
+            position: 'absolute',
+          }}
+          source={require('./assets/smiley.png')}
+        />
+        <Camera
+          ref={cam => {
+            this.camera = cam;
+          }}
+          style={styles.preview}
+          aspect={Camera.constants.Aspect.fill}
+          onBarCodeRead={this.readQR.bind(this)}
+        >
         <Text style={styles.capture} onPress={this.takePicture.bind(this)}>[CAPTURE]</Text>
         </Camera>
       </View>
     );
   }
+
   takePicture() {
     this.camera.capture()
       .then(data => console.log(data))
